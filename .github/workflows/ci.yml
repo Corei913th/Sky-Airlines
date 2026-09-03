@@ -2,7 +2,7 @@ name: ci-sky-airlines-api
 
 on:
   push:
-    branches: [main,master,dev]
+    branches: ["feature/*", "hotfix/*", "chore/*", "main", "master", "dev"]
   pull_request:
     branches: [main,master,dev]
 
