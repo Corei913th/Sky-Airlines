@@ -1,58 +1,70 @@
-# compiled output
-/dist
-/node_modules
-/build
+# Dependencies
+node_modules/
+**/node_modules/
+.pnpm-store/
+
+# Build and distribution outputs
+dist/
+**/dist/
+build/
+**/build/
+out/
+**/out/
+
+# Prisma generated clients
+**/generated/prisma/
+generated/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
 
 # Logs
-logs
 *.log
+logs/
+**/logs/
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
+pnpm-debug.log*
 
-# OS
-.DS_Store
+# Coverage and test artifacts
+coverage/
+**/coverage/
+.nyc_output/
+.jest/
 
-# Tests
-/coverage
-/.nyc_output
-
-# IDEs and editors
-./idea/*
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
+# IDEs and Editors
+.idea/
+**/.idea/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+.project
+.classpath
+.settings/
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+# AI Agents & Assistants
+.agents/
+.claude/
 
-# temp directory
-.temp
-.tmp
+# OS Metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-/generated/prisma
+# Temporary files
+.tmp/
+.temp/
+*.tmp

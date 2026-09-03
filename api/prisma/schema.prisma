@@ -1,0 +1,776 @@
+// Prisma schema for the flight booking application.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum PassengerTitle {
+  MR
+  MRS
+  MS
+  MISS
+  DR
+}
+
+enum OAuthProvider {
+  GOOGLE
+  GITHUB
+  MICROSOFT
+}
+
+enum PlaceType {
+  AIRPORT
+  CITY
+}
+
+enum CabinClass {
+  ECONOMY
+  PREMIUM_ECONOMY
+  BUSINESS
+  FIRST
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+enum ServiceType {
+  SEAT
+  BAGGAGE
+  MEAL
+  LOUNGE
+  PRIORITY
+  WIFI
+  OTHER
+}
+
+enum BaggageType {
+  CABIN
+  CHECKED
+  OTHER
+}
+
+enum BookingChangeStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+enum BookingChangeItemType {
+  ADD_SLICE
+  REMOVE_SLICE
+  REPLACE_SLICE
+}
+
+enum CancellationStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  EXPIRED
+}
+
+enum CancellationRefundDestination {
+  ORIGINAL_PAYMENT_METHOD
+  BALANCE
+  VOUCHER
+  AIRLINE_CREDIT
+  AWAITING_PAYMENT
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  REQUIRES_ACTION
+  SUCCEEDED
+  PARTIALLY_REFUNDED
+  REFUNDED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentAttemptStatus {
+  PENDING
+  PROCESSING
+  REQUIRES_ACTION
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  DUFFEL
+  STRIPE
+  OTHER
+}
+
+enum PaymentMethod {
+  CARD
+  MOBILE_MONEY
+  BANK_TRANSFER
+  BALANCE
+  OTHER
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}
+
+enum RefundReason {
+  CANCELLATION
+  CHANGE
+  SERVICE
+  MANUAL
+  OTHER
+}
+
+enum UserRole {
+  CLIENT
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum AuthTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  REFRESH_TOKEN
+  MAGIC_LINK
+  TWO_FACTOR_OTP
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  firstName     String?
+  lastName      String?
+  role          UserRole @default(CLIENT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Local credentials are separated from the user account.
+  passwordCredential PasswordCredential?
+
+  // A user may link multiple external identities.
+  accounts OAuthAccount[]
+
+  // Active login sessions and verification tokens.
+  sessions UserSession[]
+  tokens   AuthToken[]
+
+  passengerProfiles PassengerProfile[]
+  searches          FlightSearch[]
+  bookings          Booking[]
+
+  @@index([role])
+}
+
+model PasswordCredential {
+  id           String @id @default(uuid())
+  userId       String @unique
+  passwordHash String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OAuthAccount {
+  id         String        @id @default(uuid())
+  userId     String
+  provider   OAuthProvider
+  providerId String
+
+  // Store tokens only if the application actually needs provider API access.
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  scope        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
+
+// Active user login session tracking tokens, device details, and expiration.
+model UserSession {
+  id String @id @default(uuid())
+
+  userId String
+
+  sessionToken String  @unique
+  refreshToken String? @unique
+
+  userAgent String?
+  ipAddress String?
+
+  isRevoked Boolean  @default(false)
+  expiresAt DateTime
+
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expiresAt])
+}
+
+// Temporary authentication and verification tokens (email verification, password reset, OTP).
+model AuthToken {
+  id String @id @default(uuid())
+
+  userId String?
+
+  token String        @unique
+  type  AuthTokenType
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([type])
+}
+
+// Reusable passenger identity saved by a user for future bookings.
+model PassengerProfile {
+  id     String @id @default(uuid())
+  userId String
+
+  firstName String
+  lastName  String
+
+  dateOfBirth DateTime?
+  gender      Gender?
+  title       PassengerTitle?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Link to historical passenger snapshots created during booking execution.
+  bookingPassengers BookingPassenger[]
+
+  @@index([userId])
+}
+
+// Search query criteria and cache context for flight availability.
+model FlightSearch {
+  id     String  @id @default(uuid())
+  userId String?
+
+  // Origin/destination location code (IATA airport or city code).
+  originCode      String
+  destinationCode String
+  originType      PlaceType
+  destinationType PlaceType
+
+  // Target departure and optional return dates.
+  departureDate DateTime
+  returnDate    DateTime?
+
+  adults   Int @default(1)
+  children Int @default(0)
+  infants  Int @default(0)
+
+  cabinClass     CabinClass @default(ECONOMY)
+  maxConnections Int?
+
+  // External identifier of the Duffel offer request.
+  duffelOfferRequestId String?
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  offers FlightOffer[]
+
+  @@index([userId])
+  @@index([originCode, destinationCode])
+  @@index([createdAt])
+}
+
+model FlightOffer {
+  id       String @id @default(uuid())
+  searchId String
+
+  // Internal ID is kept separate from the external Duffel ID.
+  duffelOfferId String @unique
+
+  baseAmount  Decimal
+  taxAmount   Decimal
+  totalAmount Decimal
+  currency    String
+
+  // Offers are time-sensitive and must be revalidated before booking.
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  search FlightSearch @relation(fields: [searchId], references: [id], onDelete: Cascade)
+
+  slices   FlightSlice[]
+  bookings Booking[]
+
+  @@index([searchId])
+  @@index([expiresAt])
+}
+
+// A slice represents one directional journey (e.g., outbound or return), which may contain connecting flight segments.
+model FlightSlice {
+  id      String @id @default(uuid())
+  offerId String
+
+  originCode      String
+  destinationCode String
+
+  departureAt DateTime
+  arrivalAt   DateTime
+
+  durationMinutes Int
+
+  offer FlightOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  segments FlightSegment[]
+
+  @@index([offerId])
+}
+
+// A segment represents a single non-stop flight leg between two airports.
+model FlightSegment {
+  id      String @id @default(uuid())
+  sliceId String
+
+  originCode      String
+  destinationCode String
+
+  departureAt DateTime
+  arrivalAt   DateTime
+
+  // IATA 2-letter airline codes (e.g. AA, AF, BA).
+  marketingCarrierCode String // Airline selling the ticket.
+  operatingCarrierCode String // Airline physically operating the aircraft.
+
+  flightNumber String
+  aircraftCode String?
+
+  durationMinutes Int
+
+  slice FlightSlice @relation(fields: [sliceId], references: [id], onDelete: Cascade)
+
+  @@index([sliceId])
+}
+
+// Core reservation record containing financial breakdown and execution status.
+model Booking {
+  id      String  @id @default(uuid())
+  userId  String
+  offerId String?
+
+  status BookingStatus @default(PENDING)
+
+  // Internal reference displayed to the customer (PNR / booking code).
+  bookingReference String?
+
+  // Duffel API provider identifiers.
+  duffelOrderId        String?
+  duffelOrderReference String?
+
+  // Financial snapshot amounts received from airline supplier.
+  supplierBaseAmount    Decimal
+  supplierTaxAmount     Decimal
+  supplierServiceAmount Decimal
+  supplierTotalAmount   Decimal
+
+  platformFeeAmount   Decimal @default(0) // Internal markup or platform fee.
+  customerTotalAmount Decimal // Final amount billed to the customer.
+
+  currency String
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  confirmedAt DateTime?
+  cancelledAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  offer FlightOffer? @relation(fields: [offerId], references: [id], onDelete: SetNull)
+
+  passengers   BookingPassenger[]
+  slices       BookingSlice[]
+  services     BookingService[]
+  payments     Payment[]
+  changes      BookingChange[]
+  cancellation BookingCancellation?
+
+  @@index([userId])
+  @@index([status])
+  @@index([duffelOrderId])
+  @@index([bookingReference])
+}
+
+// Immutable passenger snapshot attached to a specific booking.
+model BookingPassenger {
+  id String @id @default(uuid())
+
+  bookingId String
+
+  // Optional link to the reusable profile used to create this snapshot.
+  passengerProfileId String?
+
+  // These fields are the historical snapshot used by the booking.
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+  gender      Gender?
+  title       PassengerTitle?
+
+  email String?
+  phone String?
+
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  passengerProfile PassengerProfile? @relation(fields: [passengerProfileId], references: [id], onDelete: SetNull)
+
+  services BookingService[]
+
+  @@index([bookingId])
+  @@index([passengerProfileId])
+}
+
+// Historical snapshot of booked journey slices.
+model BookingSlice {
+  id        String @id @default(uuid())
+  bookingId String
+
+  // Snapshotted origin and destination details.
+  originCode      String
+  originName      String
+  destinationCode String
+  destinationName String
+
+  departureAt DateTime
+  arrivalAt   DateTime
+
+  durationMinutes Int
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  segments BookingSegment[]
+
+  @@index([bookingId])
+}
+
+// Historical snapshot of booked flight segments.
+model BookingSegment {
+  id      String @id @default(uuid())
+  sliceId String
+
+  originCode      String
+  originName      String
+  destinationCode String
+  destinationName String
+
+  departureAt DateTime
+  arrivalAt   DateTime
+
+  marketingCarrierCode String
+  marketingCarrierName String?
+
+  operatingCarrierCode String
+  operatingCarrierName String?
+
+  flightNumber String
+  aircraftCode String?
+
+  durationMinutes Int
+  cabinClass      CabinClass?
+
+  bookingSlice BookingSlice @relation(fields: [sliceId], references: [id], onDelete: Cascade)
+
+  services BookingService[]
+
+  @@index([sliceId])
+}
+
+// Purchased ancillary services (e.g. seats, extra baggage, lounge access, meals).
+model BookingService {
+  id String @id @default(uuid())
+
+  bookingId String
+
+  passengerId String? // Optional passenger assignment for the service.
+  segmentId   String? // Optional segment assignment for the service.
+
+  type     ServiceType
+  quantity Int         @default(1)
+
+  name String?
+  code String?
+
+  unitAmount  Decimal
+  totalAmount Decimal
+  currency    String
+
+  duffelServiceId String? // External Duffel service reference ID.
+
+  seatDesignator String? // Seat number (e.g. "14B") when type is SEAT.
+  baggageType    BaggageType?
+
+  metadata Json? // Additional provider payload metadata.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+
+  passenger BookingPassenger? @relation(fields: [passengerId], references: [id], onDelete: SetNull)
+
+  segment BookingSegment? @relation(fields: [segmentId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+  @@index([passengerId])
+  @@index([segmentId])
+}
+
+// Master financial state tracking overall payment progress for a booking.
+model Payment {
+  id String @id @default(uuid())
+
+  bookingId String
+
+  paymentReference String @unique
+
+  status PaymentStatus @default(PENDING)
+
+  amount   Decimal
+  currency String
+
+  // Cached summary figures derived from payment attempts & refunds.
+  amountPaid     Decimal @default(0)
+  amountRefunded Decimal @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  booking  Booking          @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  attempts PaymentAttempt[]
+  refunds  Refund[]
+  events   PaymentEvent[]
+
+  @@index([bookingId])
+  @@index([paymentReference])
+  @@index([status])
+}
+
+// Individual payment execution attempt (supports retries & idempotency).
+model PaymentAttempt {
+  id String @id @default(uuid())
+
+  paymentId String
+
+  attemptReference String @unique
+
+  status PaymentAttemptStatus @default(PENDING)
+
+  provider PaymentProvider
+  method   PaymentMethod
+
+  amount   Decimal
+  currency String
+
+  // Prevents duplicate charges during network or gateway retries.
+  idempotencyKey String @unique
+
+  providerTransactionId String? // Gateway transaction identifier (e.g., Stripe charge ID).
+  providerPaymentId     String? // Gateway payment intent identifier.
+
+  failureCode    String?
+  failureMessage String?
+
+  metadata Json?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  events PaymentEvent[]
+
+  @@index([paymentId])
+  @@index([attemptReference])
+  @@index([status])
+  @@index([providerTransactionId])
+}
+
+// Financial refund transaction record.
+model Refund {
+  id String @id @default(uuid())
+
+  paymentId String
+
+  refundReference String @unique
+
+  amount   Decimal
+  currency String
+
+  status RefundStatus @default(PENDING)
+
+  reason RefundReason?
+
+  providerRefundId String? // Gateway refund identifier (e.g. re_xxxx).
+
+  // Prevents duplicate refund processing.
+  idempotencyKey String @unique
+
+  failureCode    String?
+  failureMessage String?
+
+  metadata Json?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId])
+  @@index([refundReference])
+  @@index([status])
+  @@index([providerRefundId])
+}
+
+// Immutable audit log of raw payment gateway webhooks and events.
+model PaymentEvent {
+  id String @id @default(uuid())
+
+  paymentId String
+  attemptId String?
+
+  type            String // Event name (e.g. payment_intent.succeeded).
+  providerEventId String? @unique // Unique ID from gateway to prevent duplicate processing.
+  payload         Json // Full raw JSON payload received.
+
+  occurredAt DateTime
+  receivedAt DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  attempt PaymentAttempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+
+  @@index([paymentId])
+  @@index([attemptId])
+}
+
+// Rebooking or flight itinerary modification request.
+model BookingChange {
+  id String @id @default(uuid())
+
+  bookingId String
+
+  status BookingChangeStatus @default(PENDING)
+
+  // External Duffel order change identifiers.
+  duffelOrderChangeRequestId String?
+  duffelOrderChangeOfferId   String?
+  duffelOrderChangeId        String?
+
+  previousTotalAmount Decimal
+  newTotalAmount      Decimal
+  penaltyAmount       Decimal
+  adjustmentAmount    Decimal // Net price difference to pay or be refunded.
+
+  currency String
+
+  reason String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  confirmedAt DateTime?
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+
+  items BookingChangeItem[]
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+// Specific itemized change within a rebooking request.
+model BookingChangeItem {
+  id String @id @default(uuid())
+
+  changeId String
+
+  type BookingChangeItemType
+
+  oldSliceId String? // Replaced journey slice ID.
+  newSliceId String? // Added journey slice ID.
+
+  description String?
+
+  createdAt DateTime @default(now())
+
+  change BookingChange @relation(fields: [changeId], references: [id], onDelete: Cascade)
+
+  @@index([changeId])
+}
+
+// Booking cancellation request and refund status tracking.
+model BookingCancellation {
+  id String @id @default(uuid())
+
+  bookingId String @unique
+
+  status CancellationStatus @default(PENDING)
+
+  duffelCancellationId String? // Duffel cancellation request ID.
+
+  refundAmount   Decimal?
+  refundCurrency String?
+
+  refundTo CancellationRefundDestination? // Destination of refunded funds (e.g. original payment method).
+
+  reason String?
+
+  createdAt   DateTime  @default(now())
+  confirmedAt DateTime?
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+}
