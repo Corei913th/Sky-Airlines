@@ -1,0 +1,25 @@
+name: setup-api
+description: Reusable composite action to install Node.js, pnpm, strict dependencies, and generate Prisma Client.
+
+runs:
+  using: composite
+  steps:
+    - name: setup-pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: setup-node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: pnpm
+        cache-dependency-path: api/pnpm-lock.yaml
+
+    - name: install-dependencies
+      run: pnpm install --frozen-lockfile 
+      shell: bash
+      working-directory: api
+
+    - name: generate-prisma
+      run: pnpm exec prisma generate
+      shell: bash
+      working-directory: api

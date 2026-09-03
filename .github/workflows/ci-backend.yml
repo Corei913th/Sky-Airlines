@@ -1,0 +1,135 @@
+name: ci-sky-airlines-api
+
+on:
+  push:
+    branches: [main,master,dev]
+  pull_request:
+    branches: [main,master,dev]
+
+# Avoid redundant parallel runs on the same branch or pull request.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Restrict default repository permissions to read-only for security.
+permissions:
+  contents: read
+
+jobs:
+  # =========================================================
+  # SECRET SCANNING
+  # =========================================================
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for accurate secret scanning
+
+      - name: gitleaks-scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # =========================================================
+  # CODE QUALITY (LINT, FORMAT & TYPECHECK)
+  # =========================================================
+  quality:
+    name: quality
+    needs: [secret-scan] # Fail-fast: Stop pipeline if secrets are detected
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v4
+
+      - name: setup-api-environment
+        uses: ./.github/actions/setup-api
+
+      - name: run-eslint
+        run: pnpm lint
+
+      - name: verify-prettier-formatting
+        run: pnpm exec prettier --check "src/**/*.ts" "test/**/*.ts"
+
+      - name: typecheck-typescript
+        run: pnpm exec tsc --noEmit
+
+  # =========================================================
+  # AUTOMATED TESTS (JEST & POSTGRESQL)
+  # =========================================================
+  test:
+    name: test
+    needs: [quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: api
+    env:
+      DATABASE_URL: postgresql://${{ secrets.TEST_DB_USER }}:${{ secrets.TEST_DB_PASSWORD }}@localhost:5432/sky_airlines_test?schema=public
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: sky_airlines_test
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v4
+
+      - name: setup-api-environment
+        uses: ./.github/actions/setup-api
+
+      - name: push-prisma-schema
+        run: pnpm exec prisma db push
+
+      - name: run-jest-tests
+        run: pnpm test
+        env:
+          NODE_ENV: test
+          PORT: 3000
+          DUFFEL_ACCESS_TOKEN: ${{ secrets.DUFFEL_TEST_TOKEN }}
+          LOG_LEVEL: info
+
+  # =========================================================
+  # NESTJS BUILD CHECK
+  # =========================================================
+  build:
+    name: build
+    needs: [quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v4
+
+      - name: setup-api-environment
+        uses: ./.github/actions/setup-api
+
+      - name: build-nestjs-app
+        run: pnpm build
