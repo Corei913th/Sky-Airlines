@@ -51,6 +51,10 @@ coverage/
 .classpath
 .settings/
 
+# AI Agents & Assistants
+.agents/
+.claude/
+
 # OS Metadata
 .DS_Store
 .DS_Store?
