@@ -3,9 +3,6 @@ name: ci-sky-airlines-api
 on:
   push:
     branches: [main, dev]
-    paths:
-      - 'api/**'
-      - '.github/**'
     paths-ignore:
       - '**.md'
       - 'LICENSE'
@@ -16,9 +13,6 @@ on:
       - 'api/.claude/**'
   pull_request:
     branches: [main, dev]
-    paths:
-      - 'api/**'
-      - '.github/**'
     paths-ignore:
       - '**.md'
       - 'LICENSE'
