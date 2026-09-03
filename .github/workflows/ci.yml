@@ -2,9 +2,23 @@ name: ci-sky-airlines-api
 
 on:
   push:
-    branches: ["feature/*", "hotfix/*", "chore/*", "main", "master", "dev"]
+    branches: [main, dev]
+    paths:
+      - 'api/**'
+      - '.github/**'
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
   pull_request:
-    branches: [main,master,dev]
+    branches: [main, dev]
+    paths:
+      - 'api/**'
+      - '.github/**'
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
 
 # Avoid redundant parallel runs on the same branch or pull request.
 concurrency:
