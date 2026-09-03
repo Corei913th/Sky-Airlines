@@ -4,7 +4,7 @@ import { tap } from 'rxjs/operators';
 import { randomUUID } from 'node:crypto';
 import { LoggerService as Logger } from '../logger';
 import { Request } from 'express';
-import { User as UserEntity } from '../../../../generated/prisma/client';
+import { User as UserEntity } from '@prisma/client';
 
 /**
  * Express Request interface extension containing optional authenticated user entity.

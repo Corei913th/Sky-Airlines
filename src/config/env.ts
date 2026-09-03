@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { EnvironmentVariables } from './schemas/environment.schema';
-import { NodeEnvironment, LogLevel } from '@/infrastructure/types';
+import { NodeEnvironment, LogLevel } from '../infrastructure/types';
 
 /**
  * Global static environment variables object.

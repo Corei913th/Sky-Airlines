@@ -1,14 +1,24 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '../../../generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import { CustomLogger as Logger } from '@/infrastructure/logger/logger';
+import { ENV } from '@/config/env';
 
 /**
- * Provider wrapping the generated PrismaClient.
- * Manages database connection lifecycles via NestJS module init and destroy hooks.
+ * Provider wrapping the generated PrismaClient with Prisma PostgreSQL driver adapter.
+ * Manages database connection lifecycles via module init and destroy hooks.
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
+
+  constructor() {
+    const pool = new Pool({ connectionString: ENV.DATABASE_URL });
+    const adapter = new PrismaPg(pool);
+    super({ adapter });
+  }
+
   /**
    * Initializes database connection when the module starts.
    */

@@ -1,4 +1,4 @@
-import { NodeEnvironment, LogLevel } from '@/infrastructure/types';
+import { NodeEnvironment, LogLevel } from '../../infrastructure/types';
 import { z } from 'zod';
 
 /**
