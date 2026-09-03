@@ -6,6 +6,8 @@ runs:
   steps:
     - name: setup-pnpm
       uses: pnpm/action-setup@v4
+      with:
+        version: 9
 
     - name: setup-node
       uses: actions/setup-node@v4
@@ -15,7 +17,7 @@ runs:
         cache-dependency-path: api/pnpm-lock.yaml
 
     - name: install-dependencies
-      run: pnpm install --frozen-lockfile 
+      run: pnpm install --frozen-lockfile
       shell: bash
       working-directory: api
 
