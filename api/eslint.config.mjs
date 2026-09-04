@@ -1,6 +1,7 @@
 // @ts-check
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -63,7 +64,10 @@ export default [
   },
 
   {
-    files: ['**/*.spec.ts'],
+    files: ['**/*.spec.ts', 'src/**/*.ts'],
+    plugins: {
+      'unused-imports': unusedImportsPlugin,
+    },
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',

@@ -23,7 +23,7 @@ export class LoggingInterceptor implements NestInterceptor {
   /**
    * Intercepts HTTP execution context to wrap requests with correlation ID and log request metrics.
    */
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request: AuthenticatedRequest = context.switchToHttp().getRequest();
 
     const correlationId = randomUUID();

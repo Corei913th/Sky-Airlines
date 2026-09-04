@@ -22,13 +22,11 @@ export class NodemailerMailProvider implements AbstractMailProvider {
       return;
     }
 
-    const hasAuth = Boolean(MAIL_USER && MAIL_PASS);
-
     this.transporter = nodemailer.createTransport({
       host: MAIL_HOST,
       port: MAIL_PORT,
       secure: MAIL_SECURE,
-      auth: hasAuth ? { user: MAIL_USER!, pass: MAIL_PASS! } : undefined,
+      auth: MAIL_USER && MAIL_PASS ? { user: MAIL_USER, pass: MAIL_PASS } : undefined,
       connectionTimeout: 5000,
       greetingTimeout: 5000,
       socketTimeout: 5000,
