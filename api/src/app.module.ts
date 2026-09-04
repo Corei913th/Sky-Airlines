@@ -8,6 +8,7 @@ import { LoggerModule } from './infrastructure/logger/logger.module';
 import { SecurityModule } from './infrastructure/security/security.module';
 import { validate } from './config/validation';
 import { ENV } from './config/env';
+import { MailModule } from './infrastructure/mail/mail.module';
 
 /**
  * Root application module bootstrapping core infrastructure (Prisma, Duffel, Logger, Security, Config).
@@ -22,6 +23,7 @@ import { ENV } from './config/env';
     }),
     LoggerModule,
     PrismaModule,
+    MailModule,
     DuffelModule,
     SecurityModule,
   ],
