@@ -1,12 +1,9 @@
-packages:
-  - '.'
-
 allowBuilds:
-  '@firebase/util': true
-  '@prisma/engines': true
-  '@scarf/scarf': true
-  bcrypt: true
-  esbuild: true
-  prisma: true
-  protobufjs: true
-  unrs-resolver: true
+  "@firebase/util": true
+  "@prisma/engines": true
+  "@scarf/scarf": true
+  "bcrypt": true
+  "esbuild": true
+  "prisma": true
+  "protobufjs": true
+  "unrs-resolver": true

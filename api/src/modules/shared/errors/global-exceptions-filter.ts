@@ -13,14 +13,14 @@ import { NodeEnvironment } from '@/infrastructure/types';
 export class GlobalExceptionFilter implements ExceptionFilter {
   constructor(private readonly logger: Logger) {}
 
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Une erreur interne est survenue sur le serveur.';
-    let data: any = null;
+    let data: unknown = null;
 
     // Handle NestJS Built-in Exceptions (HTTP 4xx/5xx)
     if (exception instanceof HttpException) {
