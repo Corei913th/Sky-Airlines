@@ -2,7 +2,7 @@ name: ci-sky-airlines-api
 
 on:
   push:
-    branches: [main, dev]
+    branches: ["feature/*", "feature/**", "hotfix/*", "chore/*", "main", "master", "dev"]
     paths-ignore:
       - '**.md'
       - 'LICENSE'
