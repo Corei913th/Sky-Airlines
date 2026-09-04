@@ -1,0 +1,15 @@
+# docker-compose.override.yml.example — Development override template
+# Copy to docker-compose.override.yml for local database & redis direct access during development
+
+services:
+  postgres:
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  mailhog:
+    ports:
+      - "${MAIL_PORT:-1025}:1025"
