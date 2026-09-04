@@ -22,9 +22,7 @@ export default [
   },
 
   eslint.configs.recommended,
-
   ...tseslint.configs.recommendedTypeChecked,
-
   eslintPluginPrettierRecommended,
 
   {
@@ -41,11 +39,41 @@ export default [
     },
   },
 
+  // Global strict rules for all source code
   {
+    files: ['src/**/*.ts'],
+    plugins: {
+      'unused-imports': unusedImportsPlugin,
+    },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/no-inferrable-types': 'error',
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/no-unused-vars': 'off',
+
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          caughtErrors: 'all',
+          caughtErrorsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+
+      eqeqeq: ['error', 'smart'],
+      'prefer-const': 'error',
+      'no-console': 'warn',
 
       'prettier/prettier': [
         'error',
@@ -63,8 +91,9 @@ export default [
     },
   },
 
+  // Relaxed rules strictly limited to test files (*.spec.ts, test/**/*.ts)
   {
-    files: ['**/*.spec.ts', 'src/**/*.ts'],
+    files: ['**/*.spec.ts', 'test/**/*.ts'],
     plugins: {
       'unused-imports': unusedImportsPlugin,
     },
@@ -76,27 +105,7 @@ export default [
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/require-await': 'off',
-       "@typescript-eslint/no-unused-vars": "off",
-      "unused-imports/no-unused-imports": "error",
-      "unused-imports/no-unused-vars": [
-        "error",
-        {
-          args: "all",
-          argsIgnorePattern: "^_",
-          caughtErrors: "all",
-          caughtErrorsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          ignoreRestSiblings: true,
-        },
-      ],
-
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
-      "@typescript-eslint/no-inferrable-types": "error",
-      "@typescript-eslint/no-non-null-assertion": "error",
-      "eqeqeq": ["error", "smart"],
-      "prefer-const": "error",
-      "no-console": "warn",
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
 ];
