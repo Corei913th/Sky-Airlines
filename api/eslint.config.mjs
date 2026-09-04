@@ -4,9 +4,20 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+/** @type {import('typescript-eslint').Config} */
+export default [
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: [
+      'dist',
+      'node_modules',
+      'coverage',
+      'generated',
+      'eslint.config.mjs',
+      '.lintstagedrc.mjs',
+      '*.mjs',
+      '.*.mjs',
+      '*.js',
+    ],
   },
 
   eslint.configs.recommended,
@@ -61,6 +72,27 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/require-await': 'off',
+       "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "error",
+        {
+          args: "all",
+          argsIgnorePattern: "^_",
+          caughtErrors: "all",
+          caughtErrorsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
+
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
+      "@typescript-eslint/no-inferrable-types": "error",
+      "@typescript-eslint/no-non-null-assertion": "error",
+      "eqeqeq": ["error", "smart"],
+      "prefer-const": "error",
+      "no-console": "warn",
     },
   },
-);
+];
