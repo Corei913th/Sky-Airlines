@@ -9,9 +9,10 @@ import { SecurityModule } from './infrastructure/security/security.module';
 import { validate } from './config/validation';
 import { ENV } from './config/env';
 import { MailModule } from './infrastructure/mail/mail.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
 
 /**
- * Root application module bootstrapping core infrastructure (Prisma, Duffel, Logger, Security, Config).
+ * Root application module bootstrapping core infrastructure (Prisma, Duffel, Logger, Security, Redis, Config).
  * Uses static ENV object as configuration factory source.
  */
 @Module({
@@ -23,6 +24,7 @@ import { MailModule } from './infrastructure/mail/mail.module';
     }),
     LoggerModule,
     PrismaModule,
+    RedisModule,
     MailModule,
     DuffelModule,
     SecurityModule,

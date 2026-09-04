@@ -25,13 +25,22 @@ export const ENV: EnvironmentVariables = parsedEnv.success
       MAIL_HOST: String(process.env['MAIL_HOST'] || 'localhost'),
       MAIL_PORT: Number(process.env['MAIL_PORT']) || 1025,
       MAIL_USER:
-        process.env['MAIL_USER'] && process.env['MAIL_USER'] !== 'null'
+        typeof process.env['MAIL_USER'] === 'string' && process.env['MAIL_USER'] !== 'null'
           ? process.env['MAIL_USER']
           : null,
       MAIL_PASS:
-        process.env['MAIL_PASS'] && process.env['MAIL_PASS'] !== 'null'
+        typeof process.env['MAIL_PASS'] === 'string' && process.env['MAIL_PASS'] !== 'null'
           ? process.env['MAIL_PASS']
           : null,
       MAIL_SECURE: process.env['MAIL_SECURE'] === 'true',
       MAIL_FROM: String(process.env['MAIL_FROM'] || '"SkyAirlines" <noreply@skyairlines.com>'),
+      REDIS_HOST: String(process.env['REDIS_HOST'] || 'localhost'),
+      REDIS_PORT: Number(process.env['REDIS_PORT']) || 6379,
+      REDIS_PASSWORD:
+        typeof process.env['REDIS_PASSWORD'] === 'string' &&
+        process.env['REDIS_PASSWORD'] !== 'null'
+          ? process.env['REDIS_PASSWORD']
+          : null,
+      REDIS_DB: Number(process.env['REDIS_DB']) || 0,
+      REDIS_KEY_PREFIX: String(process.env['REDIS_KEY_PREFIX'] || 'sky_airlines:'),
     };

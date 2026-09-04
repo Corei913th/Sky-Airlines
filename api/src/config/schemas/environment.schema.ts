@@ -60,6 +60,26 @@ export const environmentSchema = z.object({
 
   /** Default email sender address header. */
   MAIL_FROM: z.string().default('"SkyAirlines" <noreply@skyairlines.com>'),
+
+  /** Redis server hostname. */
+  REDIS_HOST: z.string().default('localhost'),
+
+  /** Redis server port number. */
+  REDIS_PORT: z.coerce.number().int().default(6379),
+
+  /** Redis server auth password. */
+  REDIS_PASSWORD: z
+    .preprocess(
+      (val) => (typeof val === 'string' && val !== 'null' && val.trim().length > 0 ? val : null),
+      z.string().nullable(),
+    )
+    .default(null),
+
+  /** Redis database index (0-15). */
+  REDIS_DB: z.coerce.number().int().default(0),
+
+  /** Global key namespace prefix for Redis keys. */
+  REDIS_KEY_PREFIX: z.string().default('sky_airlines:'),
 });
 
 /** Inferred TypeScript type derived from the environment Zod schema. */
