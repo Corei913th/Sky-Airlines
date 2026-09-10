@@ -10,6 +10,7 @@ import { validate } from './config/validation';
 import { ENV } from './config/env';
 import { MailModule } from './infrastructure/mail/mail.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
+import { UsersModule } from './modules/users/users.module';
 
 /**
  * Root application module bootstrapping core infrastructure (Prisma, Duffel, Logger, Security, Redis, Config).
@@ -28,6 +29,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
     MailModule,
     DuffelModule,
     SecurityModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
