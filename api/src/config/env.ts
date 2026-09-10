@@ -1,5 +1,6 @@
 import 'dotenv/config';
-import { EnvironmentVariables, environmentSchema } from './schemas/environment.schema';
+import type { EnvironmentVariables } from './schemas/environment.schema';
+import { environmentSchema } from './schemas/environment.schema';
 import { NodeEnvironment, LogLevel } from '../infrastructure/types';
 
 /**

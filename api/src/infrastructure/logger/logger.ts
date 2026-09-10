@@ -21,7 +21,7 @@ export class LoggerService {
    * Creates a new instance of LoggerService.
    * @param context - The context name (usually controller/service name).
    */
-  constructor(@Optional() context: string = 'Application') {
+  constructor(@Optional() context = 'Application') {
     const isDev = ENV.NODE_ENV !== NodeEnvironment.Production;
 
     this.logger = pino({

@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import * as RedisMock from 'ioredis-mock';
 import { RedisService } from '../redis.service';
 import { AbstractRedisService } from '../abstracts/redis-service';

@@ -4,7 +4,7 @@ node_modules/
 .pnpm-store/
 
 # Build and distribution outputs
-dist/
+./api/dist/
 **/dist/
 build/
 **/build/

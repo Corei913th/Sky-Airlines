@@ -1,8 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { MailService } from '../mail.service';
 import { AbstractMailProvider } from '../abstracts/mail-provider';
 import { LoggerService } from '@/infrastructure/logger/logger';
-import { SendMailOptions } from '../abstracts/mail-service';
+import type { SendMailOptions } from '../abstracts/mail-service';
 
 /**
  * Fake in-memory MailProvider mock for unit test verification.

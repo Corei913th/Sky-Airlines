@@ -1,4 +1,4 @@
-import { SendMailOptions } from './mail-service';
+import type { SendMailOptions } from './mail-service';
 
 /**
  * Port for mail delivery implementations.

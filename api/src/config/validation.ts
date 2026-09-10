@@ -1,4 +1,5 @@
-import { EnvironmentVariables, environmentSchema } from './schemas/environment.schema';
+import type { EnvironmentVariables } from './schemas/environment.schema';
+import { environmentSchema } from './schemas/environment.schema';
 
 /**
  * Validates a raw configuration record against the Zod environment schema.
